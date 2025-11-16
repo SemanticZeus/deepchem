@@ -281,7 +281,7 @@ class KerasModel(Model):
         if (self.model.inputs is not None) and len(self.model.inputs) > 0:
             self._input_shapes = [t.shape for t in self.model.inputs]
             self._input_dtypes = [
-                t.dtype.as_numpy_dtype for t in self.model.inputs
+                np.dtype(t.dtype) for t in self.model.inputs
             ]
         else:
             self._input_shapes = [(None,) + i.shape[1:] for i in example_inputs]

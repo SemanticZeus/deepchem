@@ -95,7 +95,6 @@ class WeaveModel(KerasModel):
                  batch_normalize: bool = True,
                  batch_normalize_kwargs: Dict = {
                      "renorm": True,
-                     "fused": False
                  },
                  gaussian_expand: bool = True,
                  compress_post_gaussian_expansion: bool = False,
@@ -157,7 +156,7 @@ class WeaveModel(KerasModel):
         batch_normalize: bool, optional (default True)
             If this is turned on, apply batch normalization before applying
             activation functions on convolutional and fully connected layers.
-        batch_normalize_kwargs: Dict, optional (default `{"renorm"=True, "fused": False}`)
+        batch_normalize_kwargs: Dict, optional (default `{"renorm"=True}`)
             Batch normalization is a complex layer which has many potential
             argumentswhich change behavior. This layer accepts user-defined
             parameters which are passed to all `BatchNormalization` layers in
@@ -801,7 +800,8 @@ class _GraphConvKerasModel(tf.keras.Model):
                  n_classes=2,
                  batch_normalize=True,
                  uncertainty=False,
-                 batch_size=100):
+                 batch_size=100,
+                 **kwargs):
         """An internal keras model class.
 
         The graph convolutions use a nonstandard control flow so the
@@ -811,7 +811,8 @@ class _GraphConvKerasModel(tf.keras.Model):
 
         All arguments have the same meaning as in GraphConvModel.
         """
-        super(_GraphConvKerasModel, self).__init__()
+        model_name = kwargs.pop('name', 'GraphConvKerasModel')
+        super(_GraphConvKerasModel, self).__init__(name=model_name, **kwargs)
         if mode not in ['classification', 'regression']:
             raise ValueError(
                 "mode must be either 'classification' or 'regression'")
@@ -837,7 +838,7 @@ class _GraphConvKerasModel(tf.keras.Model):
             for layer_size in graph_conv_layers
         ]
         self.batch_norms = [
-            BatchNormalization(fused=False) if batch_normalize else None
+            BatchNormalization() if batch_normalize else None
             for _ in range(len(graph_conv_layers) + 1)
         ]
         self.dropouts = [
